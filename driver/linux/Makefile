@@ -62,7 +62,7 @@ DRVR_HDR := riffa_driver.h
 DBUGVAL := DBUG
 
 obj-m += $(NAME).o
-$(NAME)-y := riffa_driver.o circ_queue.o
+$(NAME)-y := riffa_driver.o circ_queue.o block.o
 
 # Helper functions
 define assert
@@ -98,7 +98,7 @@ $(NAME).ko: *.c *.h
 	sed -i 's/#define VENDOR_ID1 [^\n]*/#define VENDOR_ID1 0x$(VENDOR_ID1)/g' $(DRVR_HDR)
 	sed -i 's/#define DEBUG [^\n]*/#define DBUG 1/g' $(DRVR_HDR)
 	sed -i 's/#define DBUG [^\n]*/#define $(DBUGVAL) 1/g' $(DRVR_HDR)
-	make -C $(KDIR) SUBDIRS=`pwd` modules
+	make -C $(KDIR) KBUILD_EXTMOD=`pwd` modules
 	rm -rf $(LIB_OBJS)
 
 $(NAME).so.$(LIB_VER): $(LIB_OBJS)

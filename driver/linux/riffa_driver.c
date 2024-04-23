@@ -66,6 +66,7 @@
 #include <asm/div64.h>
 #include "riffa_driver.h"
 #include "circ_queue.h"
+#include "block.h"
 
 MODULE_LICENSE("Dual BSD/GPL");
 MODULE_DESCRIPTION("PCIe driver for RIFFA, Linux (2.6.27+)");
@@ -466,7 +467,7 @@ static inline struct sg_mapping * fill_sg_buf(struct fpga_state * sc, int chnl,
 		#elsif LINUX_VERSION_CODE < KERNEL_VERSION(6,5,0)
 		num_pages = get_user_pages(udata, num_pages_reqd, FOLL_WRITE, pages, NULL);
 		#else
-		num_pages = get_user_pages(udata, num_pages_reqd, FOLL_WRITE, pages);
+		num_pages = get_user_pages(udata, num_pages_reqd, FOLL_WRITE, pages, NULL);
 		#endif
 
 		#if LINUX_VERSION_CODE < KERNEL_VERSION(5,8,0)
@@ -1619,7 +1620,9 @@ static int __init fpga_init(void)
 
 	devt = MKDEV(MAJOR_NUM, 0);
 	device_create(mymodule_class, NULL, devt, "%s", DEVICE_NAME);
-
+	if(init_pcie_block_dev()){
+		return (error); 
+	}
 	return 0;
 }
 
@@ -1628,6 +1631,7 @@ static int __init fpga_init(void)
  */
 static void __exit fpga_exit(void)
 {
+	exit_pcie_block_dev();
 	device_destroy(mymodule_class, devt); 
 	class_destroy(mymodule_class);
 	pci_unregister_driver(&fpga_driver);
